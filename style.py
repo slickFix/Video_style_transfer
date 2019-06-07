@@ -9,6 +9,9 @@ Created on Thu Jun  6 22:54:20 2019
 
 import os
 import numpy as np,scipy.misc
+
+from utils import *
+
 from argparse import ArgumentParser
 
 
@@ -122,7 +125,38 @@ def main():
     parser = build_parser()
     options = parser.parse_args()
     
+    # validating the arguments passed through arg parser
     validate_options(options)
+    
+    style_target = get_img(options.style_path)
+    
+    if not options.slow:
+        content_targets = get_files(options.train_path)
+    elif options.test_path:
+        content_targets = [options.test_path]
+        
+    kwargs = {
+            "slow":options.slow,
+            "epochs":options.epochs,
+            "print_iterations":options.checkpoint_iterations,
+            "batch_size":options.batch_size,
+            "save_path":os.path.join(options.checkpoint_dir,'model.ckpt'),
+            "learning_rate":options.learning_rate
+            }
+    
+    if options.slow:
+        if options.epochs < 10:
+            kwargs['epochs']=1000
+        if options.learning_rate < 1:
+            kwargs['learning_rate'] = 1e1
+            
+    args = [content_targets,
+            style_target,
+            options.content_weight,
+            options.style_weight,
+            options.tv_weight,
+            options.vgg_path]
+    
     
     
 
