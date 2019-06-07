@@ -95,14 +95,36 @@ def build_parser():
     return parser
     
     
+def validate_options(options):
+    ''' validating the paths and sanity checking the hyperparameters values'''
     
+    assert os.path.exists(options.checkpoint_dir),"checkpoint dir not found!"
+    assert os.path.exists(options.style_path),'style path not found !!'
+    assert os.path.exists(options.train_path),'train path not found !!'
     
+    if options.test_path or options.test_dir:
+        assert os.path.exists(options.test_path),'test image not found !!'
+        assert os.path.exists(options.test_dir),'test directory not found !!'
     
+    assert os.path.exists(options.vgg_path),'vgg network data not found !!'
+    
+    assert options.epochs>0
+    assert options.batch_size >0
+    assert options.checkpoint_iterations >0
+    assert options.content_weight >=0
+    assert options.style_weight >=0
+    assert options.tv_weight >=0
+    assert options.learning_rate >=0
     
 
 def main():
     # getting the defined parser
     parser = build_parser()
+    options = parser.parse_args()
+    
+    validate_options(options)
+    
+    
 
 if __name__ == '__main__':
     main()
