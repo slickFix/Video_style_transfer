@@ -60,7 +60,6 @@ def net(vgg_path,input_image):
     net = {}
     current = input_image
     
-    return 
     for i,name in enumerate(layers):
         layer_type = name[:4]
         
@@ -84,4 +83,22 @@ def net(vgg_path,input_image):
     
     assert len(net) == len(layers)
     return net
+    
+
+def _conv_layer(input,weights,bias):
+    ''' performs convolution operation on the input'''
+    conv = tf.nn.conv2d(input,tf.constant(weights),strides = (1,1,1,1),padding='SAME')
+    return tf.nn.bias_add(bias)
+
+def _pool_layer(input):
+    '''performs pooling operation on the input '''
+    
+    # ksize: A list or tuple of 4 ints. The size of the window for each dimension of the input tensor.
+    return tf.nn.max_pool(input,ksize=(1,2,2,1),strides=(1,2,2,1),padding='SAME')
+
+def preprocess(image):
+    return image-MEAN_PIXEL
+
+def unprocess(image):
+    return image+MEAN_PIXEL
     
