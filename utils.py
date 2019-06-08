@@ -8,6 +8,19 @@ Created on Fri Jun  7 15:03:34 2019
 
 import scipy.misc, numpy as np,os
 
+def save_img(out_path,img):
+    img = np.clip(img,0,255).astype(np.uint8)
+    scipy.misc.imsave(out_path,img)
+    
+
+def scale_img(style_path,style_scale):
+    o0,o1,o2 = scipy.misc.imread(style_path,mode='RGB').shape
+    scale = float(style_scale)
+    new_shape = (int(o0*scale),int(o1*scale),o2)
+    style_target = get_img(style_path,img_size=new_shape)
+    return style_target
+
+
 def get_img(src,img_size = False):
     img = scipy.misc.imread(src,mode='RGB')
     
