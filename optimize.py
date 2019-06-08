@@ -115,4 +115,80 @@ def optimize(content_targets,style_target,content_weight,style_weight,
         
         style_loss = style_weight * functools.reduce(tf.add,style_loss)/batch_size
         
+        # total variation denoising
+        tv_y_size = _tensor_size(preds[:,1:,:,:])
+        tv_x_size = _tensor_size(preds[:,:,1:,:])
+        y_tv = tf.nn.l2_loss(preds[:,1:,:,:] - preds[:,:train_batch_shape[1]-1,:,:])
+        x_tv = tf.nn.l2_loss(preds[:,:,1:,:] - preds[:,:,:train_batch_shape[2]-1,:])
+        tv_loss = tv_weight*2*(x_tv/tv_x_size + y_tv/tv_y_size)/batch_size
         
+        # Defining total loss
+        loss = content_loss + style_loss + tv_loss
+        
+        # Defining optimizer
+        train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss)
+        
+        # variabel initializing (tensorflow)
+        sess.run(tf.global_variables_initializer())
+        
+        for epoch in range(epochs):
+            
+            num_examples = len(content_targets)
+            
+            iterations = 0
+            
+            while iterations*batch_size < num_examples:
+                start_time = dt.datetime.now()
+                
+                start_batch = iterations*batch_size
+                end_batch = start_batch + batch_size
+                
+                iterations+=1
+                
+                X_input_feed = np.zeros(train_batch_shape,dtype = np.float32)
+                
+                # preparing the X_input_feed
+                for j,input_img in enumerate(content_targets[start_batch:end_batch]):
+                    X_input_feed[j] = get_img(input_img,(256,256,3)).astype(np.float32)
+                    
+                assert X_input_feed.shape[0] == batch_size
+                
+                # running optimer step
+                feed_dict = { X_content_ph:X_input_feed}
+                train_step.run(feed_dict=feed_dict)
+                
+                end_time = dt.datetime.now()
+                
+                if debug :
+                    print("iteration : {} , epoch : {} , time for this iteration : {}".format(iterations,epoch,str(end_time-start_time)))
+                    
+                # if iterations >1000 i.e. num_examples is more than 1000*batch_size
+                print_iter = int(iterations)%print_iterations == 0
+                
+                if slow:
+                    print_iter = epoch % print_iterations == 0
+                    
+                is_last_iter = epoch == epochs-1 and iterations * batch_size >=num_examples
+                
+                should_print = print_iter or is_last_iter
+                
+                if should_print:
+                    calculate_these  = [style_loss, content_loss, tv_loss, loss, preds]
+                    test_feed_dict = {X_content_ph:X_input_feed}
+                    
+                    # calcuating loss and preds i.e. generated image
+                    _style_loss,_content_loss,_tv_loss,_loss,_preds = sess.run(calculate_these,
+                                                                               feed_dict=test_feed_dict)
+                    
+                    losses = (_style_loss,_content_loss,_tv_loss,_loss)
+                    
+                    if slow:
+                        _preds = vgg.unprocess(_preds)
+                    else:
+                        saver = tf.train.Saver()
+                        res = saver.save(sess,save_path)
+                        
+                    yield (_preds,losses,iterations,epoch)
+                    
+                    
+                
