@@ -190,5 +190,11 @@ def optimize(content_targets,style_target,content_weight,style_weight,
                         
                     yield (_preds,losses,iterations,epoch)
                     
+def _tensor_size(tensor):
+    ''' calculates the size of the tensor excluding the 1st dimension [which is mostly batch size]'''
+    
+    from operator import mul
+    return functools.reduce(mul,(d.value for d in tensor.get_shape()[1:]),1) # 1 is the initializer for mul operation
+                        
                     
                 
