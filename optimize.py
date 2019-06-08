@@ -89,8 +89,30 @@ def optimize(content_targets,style_target,content_weight,style_weight,
                     
         # calculating the content loss
         content_img_size = _tensor_size(content_img_activation[CONTENT_LAYER])*batch_size
+        
         content_loss = content_weight * ( 2 * 
-             tf.nn.l2_loss(gen_net[CONTENT_LAYER]-content_img_activation[CONTENT_LAYER])/content_img_size
-                )            
+                       tf.nn.l2_loss(gen_net[CONTENT_LAYER]-content_img_activation[CONTENT_LAYER])/content_img_size
+                       )            
+        
+        # computing the generated image gram matrix features
+        style_loss = []
+        
+        for style_layer in STYLE_LAYERS:
+            
+            activations = gen_net[style_layer]
+            
+            bs,height,width,filters = map(lambda i:i.value,activations.get_shape())
+            activation_size = height*width*filters
+            
+            activations = tf.reshape(activations,(bs,height*width,filters))
+            activations_T = tf.transpose(activations,perm=[0,2,1])
+            
+            gram = tf.matmul(activations_T,activations)/activation_size
+            
+            style_gram = style_img_gram_features[style_layer]
+            
+            style_loss.append(2 * tf.nn.l2_loss(gram-style_gram)/style_gram.size)
+        
+        style_loss = style_weight * functools.reduce(tf.add,style_loss)/batch_size
         
         
