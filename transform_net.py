@@ -11,7 +11,7 @@ import tensorflow as tf
 WEIGHTS_INIT_STDEV = 0.1
 
 def net(image):
-    ''' Returns the logits after passing the image through the network'''
+    ''' Returns the predictions after passing the image through the network'''
     conv1 = _conv_layer(image,32,8,1)
     conv2 = _conv_layer(conv1,64,3,2)
     conv3 = _conv_layer(conv2,128,3,2)
