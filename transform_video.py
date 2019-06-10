@@ -45,10 +45,17 @@ def build_parser():
     
     return parser
 
-
+def validate_options(options):
+    
+    assert os.path.exists(options.checkpoint),'model saved directory does not exists!!'    
+    assert os.path.exists(options.out),'generated video save directory does not exists!!'
+    assert os.path.exists(options.in_path),'video input path does not exists!!'
     
 def main():
     parser = build_parser()
+    options = parser.parse_args()
+    
+    evaluate.ffwd_video(options.in_path,options.out,options.checkpoint,options.device,options.batch_size)
 
 if __name__ == '__main__':
     main()
