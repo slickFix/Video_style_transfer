@@ -18,7 +18,7 @@ CONTENT_LAYER = 'relu4_2'
 
 def optimize(content_targets,style_target,content_weight,style_weight,
              tv_weight,vgg_path,epochs=2,print_iterations=1000,batch_size = 4,
-             save_path='checkpoint/save/model.ckpt',slow=False,learning_rate = 1e-3,debug=False):
+             save_path='checkpoint/save/model.ckpt',slow=False,learning_rate = 1e-3,debug=True):
     
     if slow:
         batch_size=1
@@ -135,8 +135,9 @@ def optimize(content_targets,style_target,content_weight,style_weight,
             
             num_examples = len(content_targets)
             
-            iterations = 0
+            print('no of training examples: ',num_examples)
             
+            iterations = 0
             while iterations*batch_size < num_examples:
                 start_time = dt.datetime.now()
                 
