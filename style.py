@@ -157,7 +157,15 @@ def main():
             options.tv_weight,
             options.vgg_path]
     
-    
+    for preds,losses,i, epoch in optimize(*args,**kwargs):
+        
+        style_loss,content_loss,tv_loss,loss = losses
+        
+        print('Epoch %d, Iteration %d, Loss %d' %(epoch,i,loss))
+        
+        print('style_loss: %d, content_loss: %d,tv_loss: %d'%(style_loss,content_loss,tv_loss))
+        
+    print("Training complete..")
     
 
 if __name__ == '__main__':
