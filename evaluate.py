@@ -111,7 +111,35 @@ def ffwd_img(data_in,paths_out,checkpoint_dir,device_t='/gpu:0',batch_size = 4):
                     
         
 
+def ffwd_different_dimensions(in_path,out_path,checkpoint_dir,device_t=DEVICE,batch_size = BATCH_SIZE):
+    
+    ''' feed forward with diffrent dimension images '''
+    
+    in_path_of_shape = defaultdict(list)
+    out_path_of_shape = defaultdict(list)
+    
+    for i in range(len(in_path)):
+        in_image = in_path[i]
+        out_image = out_path[i]
+        
+        shape = '%dx%dx%d'% get_img(in_image).shape
+        
+        in_path_of_shape[shape].append(in_image)
+        out_path_of_shape[shape].append(out_image)
+        
+    for shape in in_path_of_shape:
+        # process all the image of same dimensions
+        print('Processing images of shape %s '%shape)
+        
+        ffwd_img(in_path_of_shape[shape],out_path_of_shape[shape],
+                 checkpoint_dir,device_t,batch_size)
 
+def ffwd_single_img(in_path,out_path,checkpoint_dir,device='/cpu:0'):
+    
+    ''' feed forward with single image'''
+    paths_in,paths_out = [in_path],[out_path]
+    
+    ffwd_img(paths_in,paths_out,checkpoint_dir,batch_size = 1,device_t=device)
 
 def build_parser():
     parser = ArgumentParser()
