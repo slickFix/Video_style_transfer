@@ -9,6 +9,7 @@ Created on Thu Jun  6 22:54:20 2019
 
 import os
 import numpy as np,scipy.misc
+import optimize
 
 from utils import *
 
@@ -26,8 +27,8 @@ LEARNING_RATE = 1e-3
 NUM_EPOCHS = 2
 CHECKPOINT_DIR = 'checkpoints'
 CHECKPOINT_ITERATIONS = 2000
-VGG_PATH  = 'data/imagenet-vgg-verydeep-19.mat'
-TRAIN_PATH = 'data/train2019'
+VGG_PATH  = './data/imagenet-vgg-verydeep-19.mat'
+TRAIN_PATH = './data/train2014'
 BATCH_SIZE = 4
 DEVICE = '/gpu:0'
 FRAC_GPU = 1
@@ -67,7 +68,7 @@ def build_parser():
                         dest = 'epochs',help = 'num epochs',
                         metavar = 'EPOCHS',default=NUM_EPOCHS)
     
-    parser.add_argument('--batch_size',type = int,
+    parser.add_argument('--batch-size',type = int,
                         dest = 'batch_size',help = 'batch_size',
                         metavar = 'BATCH_SIZE',default = BATCH_SIZE)
     
@@ -88,7 +89,7 @@ def build_parser():
                         metavar = 'STYLE_WEIGHT',default = STYLE_WT)
     
     parser.add_argument('--tv-weight',type = float,
-                        dest = 'tv_weigth',help = 'total variation regularization weight (default %(default)s)',
+                        dest = 'tv_weight',help = 'total variation regularization weight (default %(default)s)',
                         metavar = 'TV_WEIGHT',default = TV_WT)
     
     parser.add_argument('--learning-rate',type = float,
@@ -157,7 +158,7 @@ def main():
             options.tv_weight,
             options.vgg_path]
     
-    for preds,losses,i, epoch in optimize(*args,**kwargs):
+    for preds,losses,i, epoch in optimize.optimize(*args,**kwargs):
         
         style_loss,content_loss,tv_loss,loss = losses
         
