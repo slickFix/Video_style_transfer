@@ -68,7 +68,7 @@ def _residual_block(net,filter_size=3):
     
     ''' Residual block convolutions '''
     tmp = _conv_layer(net,128,filter_size,1)
-    return net + _conv_layer(tmp,128,filter_size,relu = False)
+    return net + _conv_layer(tmp,128,filter_size,1,relu = False)
 
 def _instance_norm(net,train = True):
     

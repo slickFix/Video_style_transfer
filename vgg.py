@@ -88,7 +88,7 @@ def net(vgg_path,input_image):
 def _conv_layer(input,weights,bias):
     ''' performs convolution operation on the input'''
     conv = tf.nn.conv2d(input,tf.constant(weights),strides = (1,1,1,1),padding='SAME')
-    return tf.nn.bias_add(bias)
+    return tf.nn.bias_add(conv,bias)
 
 def _pool_layer(input):
     '''performs pooling operation on the input '''
