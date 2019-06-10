@@ -18,6 +18,101 @@ BATCH_SIZE = 4
 DEVICE = '/gpu:0'
 
 
+def ffwd_img(data_in,paths_out,checkpoint_dir,device_t='/gpu:0',batch_size = 4):
+    
+    assert len(paths_out)>0
+    
+    # checking if the input path is string type
+    is_paths = type(data_in[0]) == str
+    if is_paths:
+        assert  len(data_in) == len(paths_out)
+        
+        # if called via 'ffwd_different_dimensions" shape remains same for that call
+        img_shape = get_img(data_in[0]).shape
+    else:
+        print("Input path is not string, aborting ")
+        return
+    
+    
+    batch_size  = min(len(paths_out),batch_size)
+    
+    # defining tensorflow parameters
+    g = tf.Graph()
+    soft_config = tf.ConfigProto(allow_soft_placement = True)
+    soft_config.gpu_options.allow_growth = True
+    
+    # Starting the tf session
+    with g.as_default(),g.device(device_t),tf.Session(config = soft_config) as sess:
+        
+        # appending batch size 
+        batch_shape = (batch_size,) + img_shape
+        
+        # defining placeholders
+        img_placeholder = tf.placeholder(tf.float32,shape = batch_shape,name = 'img_placeholder')
+        
+        # forward propogation i.e. defining the network
+        preds = transform_net.net(img_placeholder)
+        
+        saver = tf.train.Saver()
+        
+        # restoring the trained network
+        if os.path.isdir(checkpoint_dir):
+            
+            ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
+            if ckpt and ckpt.model_checkpoint_path:
+                saver.restore(sess, ckpt.model_checkpoint_path)
+            else:
+                raise Exception("No checkpoint found...")
+        else:
+            saver.restore(sess, checkpoint_dir)
+        
+        # defining the no of iterations
+        num_iters = int(len(paths_out)/batch_size)
+        
+        for i in range(num_iters):
+            
+            # defining the start and end position of the batch
+            start_pos = i*batch_size
+            end_pos = start_pos + batch_size
+            
+            curr_batch_out = paths_out[start_pos:end_pos]
+            
+            # creating the feedable input
+            if is_paths:
+                curr_batch_in = data_in[start_pos:end_pos]
+                
+                x = np.zeros(batch_shape,dtype = np.float32)
+                
+                for j,path_in in enumerate(curr_batch_in):
+                    
+                    # reading the image
+                    img = get_img(path_in)
+                    
+                    assert img.shape == img_shape,'Images have different dimensions. ' +  \
+                                                    'Resize images or use --allow-different-dimensions.'
+                    
+                    x[j] = img
+            
+            else:
+                x = data_in[start_pos:end_pos]
+                
+            # running the model for prediction            
+            _preds = sess.run(preds,feed_dict={img_placeholder:x})
+            
+            # saving the predicted(styled) image
+            for j,path_out in enumerate(curr_batch_out):
+                save_img(path_out,_preds[j])
+                
+        remaining_in = data_in[num_iters*batch_size:]
+        remaining_out = path_out[num_iters*batch_size:]
+    
+    if len(remaining_in) > 0:
+        ffwd_img(remaining_in,remaining_out,checkpoint_dir,device_t=device_t,batch_size=1)
+                    
+        
+
+
+
 def build_parser():
     parser = ArgumentParser()
     
