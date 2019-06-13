@@ -35,7 +35,7 @@ def build_parser():
                         metavar = 'TMP_DIR',default = TMP_DIR)
     
     parser.add_argument('--device',type=str,
-                        metavar = 'device',help = 'device for eval. gpu = /gpu:0',
+                        dest = 'device',help = 'device for eval. gpu = /gpu:0',
                         metavar = 'DEVICE',default = DEVICE)
     
     parser.add_argument('--batch-size',type = int,
